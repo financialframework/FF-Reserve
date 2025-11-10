@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>FF Reserve · Bucket Method Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --fg: #e5e7eb;
+      --card: #111827;
+      --accent: #38bdf8;
+      --danger: #f97316;
+      --muted: #9ca3af;
+      --radius: 12px;
+      --pad: 14px;
+      --font: system-ui, -apple-system, BlinkMacSystemFont, -sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      background: radial-gradient(circle at top, #111827 0, #020817 55%);
+      color: var(--fg);
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+    }
+    .app {
+      width: 100%;
+      max-width: 960px;
+      margin: auto;
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 2fr 1.8fr;
+      align-items: flex-start;
+    }
+    @media (max-width: 800px) {
+      .app { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: var(--pad);
+      border: 1px solid rgba(148,163,253,0.05);
+      box-shadow: 0 18px 50px rgba(15,23,42,0.6);
+    }
+    h1, h2, h3 {
+      margin: 0 0 8px;
+      font-weight: 500;
+    }
+    h1 span {
+      font-weight: 600;
+      color: var(--accent);
+    }
+    p {
+      margin: 0 0 8px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+    input {
+      width: 100%;
+      padding: 7px 9px;
+      border-radius: 8px;
+      border: 1px solid rgba(148,163,253,0.18);
+      background: #020817;
+      color: var(--fg);
+      font-size: 0.86rem;
+      outline: none;
+    }
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(56,189,248,0.3);
+    }
+    button {
+      padding: 7px 11px;
+      border-radius: 999px;
+      border: none;
+      background: var(--accent);
+      color: #020817;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    button.secondary {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid rgba(148,163,253,0.25);
+    }
+    button.danger {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid rgba(248,140,68,0.45);
+    }
+    button:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .stack { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+    .muted { color: var(--muted); font-size: 0.8rem; }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(148,163,253,0.12);
+      font-size: 0.7rem;
+      color: var(--accent);
+      margin-right: 4px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      font-size: 0.68rem;
+      color: var(--muted);
+      border: 1px solid rgba(148,163,253,0.15);
+      margin-right: 4px;
+    }
+    .status {
+      font-size: 0.78rem;
+      margin-top: 4px;
+    }
+    .status.ok { color: #22c55e; }
+    .status.err { color: #f97316; }
+    .divider {
+      height: 1px;
+      background: radial-gradient(circle, rgba(148,163,253,0.4), transparent);
+      margin: 8px 0;
+    }
+    .code-box {
+      display: grid;
+      grid-template-columns: 1.6fr 1.6fr;
+      gap: 6px;
+      margin-top: 3px;
+    }
+    .bubble {
+      font-size: 0.75rem;
+      padding: 4px 7px;
+      border-radius: 8px;
+      background: rgba(15,23,42,0.95);
+      border: 1px solid rgba(148,163,253,0.18);
+      color: var(--muted);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <!-- LEFT: Auth & flows -->
+  <div class="card">
+    <h1>FF <span>Reserve</span></h1>
+    <p>Secure budgeting built on the Bucket Method. This is a minimal V1 UI to exercise the backend.</p>
+    <div class="divider"></div>
+
+    <div class="stack">
+      <h3>1. Create account</h3>
+      <label>Name</label>
+      <input id="name" placeholder="Your name" />
+      <label>Email</label>
+      <input id="email" placeholder="you@example.com" />
+      <label>Phone</label>
+      <input id="phone" placeholder="+15555550123" />
+      <label>Password</label>
+      <input id="password" type="password" placeholder="StrongPassword123!" />
+      <div class="row">
+        <div>
+          <label>Locale</label>
+          <input id="locale" value="en" />
+        </div>
+        <div>
+          <label>Theme</label>
+          <input id="theme" value="system" />
+        </div>
+      </div>
+      <button id="signupBtn">Sign up & send codes</button>
+      <div id="signupStatus" class="status"></div>
+      <div class="bubble">
+        After signup, check the Replit console for the logged email/SMS codes (V1 uses console as mock sender).
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="stack">
+      <h3>2. Verify codes</h3>
+      <p class="muted">Use the codes printed in the backend console for this user.</p>
+      <label>User ID</label>
+      <input id="verifyUserId" placeholder="Will auto-fill from signup" />
+      <div class="code-box">
+        <div>
+          <label>Email code</label>
+          <input id="emailCode" placeholder="123456" />
+          <button id="verifyEmailBtn" class="secondary">Verify email</button>
+        </div>
+        <div>
+          <label>Phone code</label>
+          <input id="phoneCode" placeholder="123456" />
+          <button id="verifyPhoneBtn" class="secondary">Verify phone</button>
+        </div>
+      </div>
+      <div id="verifyStatus" class="status"></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="stack">
+      <h3>3. Login</h3>
+      <label>Email</label>
+      <input id="loginEmail" placeholder="you@example.com" />
+      <label>Password</label>
+      <input id="loginPassword" type="password" placeholder="••••••••" />
+      <button id="loginBtn">Login</button>
+      <div id="loginStatus" class="status"></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="stack">
+      <h3>4. Danger zone</h3>
+      <button id="logoutBtn" class="secondary">Logout</button>
+      <button id="deleteBtn" class="danger">Delete account</button>
+      <div id="dangerStatus" class="status"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Live profile & bucket preview placeholder -->
+  <div class="card">
+    <h3>Session & Profile</h3>
+    <p class="muted">Once logged in, this pulls <code>/me</code> from your FF Reserve backend using the session cookie.</p>
+    <button id="refreshMeBtn" class="secondary">Refresh /me</button>
+    <div id="meBox" class="bubble">Not loaded yet.</div>
+
+    <div class="divider"></div>
+
+    <h3>Bucket Method (coming next)</h3>
+    <p class="muted">
+      V1 backend now works. Next steps:
+    </p>
+    <ul class="muted" style="font-size:0.78rem; padding-left:16px; margin-top:4px;">
+      <li>Store incomes & fixed costs per user.</li>
+      <li>Compute Needs / Wants / Success targets from their data.</li>
+      <li>Show warnings when Needs &gt; 35%.</li>
+      <li>Attach bills to a calendar with reminders.</li>
+    </ul>
+    <p class="muted">
+      This panel will later become the real FF Reserve dashboard. For now it proves auth, sessions, and isolation actually work.
+    </p>
+  </div>
+</div>
+
+<script>
+  const apiBase = ""; // same origin
+
+  function setStatus(id, msg, ok) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = msg || "";
+    el.className = "status " + (msg ? (ok ? "ok" : "err") : "");
+  }
+
+  async function api(path, options = {}) {
+    const res = await fetch(apiBase + path, {
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      ...options
+    });
+    let data = null;
+    try { data = await res.json(); } catch {}
+    if (!res.ok) {
+      throw new Error((data && data.error) || ("HTTP " + res.status));
+    }
+    return data;
+  }
+
+  document.getElementById("signupBtn").onclick = async () => {
+    setStatus("signupStatus", "Creating account...", true);
+    try {
+      const body = {
+        name: document.getElementById("name").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        phone: document.getElementById("phone").value.trim(),
+        password: document.getElementById("password").value,
+        locale: document.getElementById("locale").value.trim() || "en",
+        theme: document.getElementById("theme").value.trim() || "system"
+      };
+      const data = await api("/auth/signup", {
+        method: "POST",
+        body: JSON.stringify(body)
+      });
+      if (data.userId) {
+        document.getElementById("verifyUserId").value = data.userId;
+        setStatus("signupStatus", "Signup ok. Codes logged in backend console. UserId filled below.", true);
+      } else {
+        setStatus("signupStatus", "Signup response missing userId.", false);
+      }
+    } catch (e) {
+      setStatus("signupStatus", e.message, false);
+    }
+  };
+
+  document.getElementById("verifyEmailBtn").onclick = async () => {
+    const userId = document.getElementById("verifyUserId").value.trim();
+    const code = document.getElementById("emailCode").value.trim();
+    try {
+      await api("/auth/verify-email", {
+        method: "POST",
+        body: JSON.stringify({ userId, code })
+      });
+      setStatus("verifyStatus", "Email verified.", true);
+    } catch (e) {
+      setStatus("verifyStatus", "Email verify: " + e.message, false);
+    }
+  };
+
+  document.getElementById("verifyPhoneBtn").onclick = async () => {
+    const userId = document.getElementById("verifyUserId").value.trim();
+    const code = document.getElementById("phoneCode").value.trim();
+    try {
+      await api("/auth/verify-phone", {
+        method: "POST",
+        body: JSON.stringify({ userId, code })
+      });
+      setStatus("verifyStatus", "Phone verified (if both ok, user is active).", true);
+    } catch (e) {
+      setStatus("verifyStatus", "Phone verify: " + e.message, false);
+    }
+  };
+
+  document.getElementById("loginBtn").onclick = async () => {
+    try {
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value;
+      await api("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password })
+      });
+      setStatus("loginStatus", "Login successful. Session cookie set.", true);
+      loadMe();
+    } catch (e) {
+      setStatus("loginStatus", "Login failed: " + e.message, false);
+    }
+  };
+
+  document.getElementById("logoutBtn").onclick = async () => {
+    try {
+      await api("/auth/logout", { method: "POST" });
+      setStatus("dangerStatus", "Logged out.", true);
+      document.getElementById("meBox").textContent = "Not loaded.";
+    } catch (e) {
+      setStatus("dangerStatus", "Logout error: " + e.message, false);
+    }
+  };
+
+  document.getElementById("deleteBtn").onclick = async () => {
+    if (!confirm("Delete your FF Reserve account? This cannot be undone.")) return;
+    try {
+      await api("/account", { method: "DELETE" });
+      setStatus("dangerStatus", "Account deleted.", true);
+      document.getElementById("meBox").textContent = "Account deleted.";
+    } catch (e) {
+      setStatus("dangerStatus", "Delete failed: " + e.message, false);
+    }
+  };
+
+  async function loadMe() {
+    try {
+      const data = await api("/me");
+      document.getElementById("meBox").textContent = JSON.stringify(data, null, 2);
+      setStatus("loginStatus", "Session OK. /me loaded.", true);
+    } catch (e) {
+      document.getElementById("meBox").textContent = "Not logged in or session invalid.";
+    }
+  }
+
+  document.getElementById("refreshMeBtn").onclick = loadMe;
+</script>
+</body>
+</html>
